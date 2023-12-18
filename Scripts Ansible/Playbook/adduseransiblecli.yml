@@ -1,0 +1,17 @@
+---
+- hosts: hostmachine
+  remote_user: usermachine
+  become: true
+  become_method: sudo
+  tasks:
+    - name: Create a login user
+      user:
+        name: ansiblecli
+        password: ''
+        groups: # Empty by default, here we give it some groups
+        - sudo
+        state: present
+        shell: /bin/bash       # Defaults to /bin/bash
+        system: no             # Defaults to no
+        createhome: yes        # Defaults to yes
+        home: /home/ansiblecli  # Defaults to /home/<username>
