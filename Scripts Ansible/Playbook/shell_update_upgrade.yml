@@ -1,0 +1,9 @@
+---
+- hosts: hostsmachine
+  remote_user: usermachine #les droit root doivent être configurer dans le fichier surdoers (root)
+  become: true
+  become_method: sudo
+  tasks:
+    - name: Update system
+      shell: 
+        apt-get update && apt-get upgrade -y
