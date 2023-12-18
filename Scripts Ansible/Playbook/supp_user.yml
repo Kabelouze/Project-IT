@@ -1,0 +1,10 @@
+---
+- hosts: hostmachine
+  remote_user: usermachine
+  become: true
+  become_method: sudo
+  tasks:
+  - name: suppresion de l'utilisateur
+    user:
+      name: ansiblecli
+      state: absent
