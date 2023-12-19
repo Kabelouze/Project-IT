@@ -1,7 +1,7 @@
 ---
 - name: "Requete dans une base"
-  hosts: testdb
-  remote_user: root
+  hosts: HOSTMACHINE
+  remote_user: USER
   
   tasks:
     - name: "Installation de SSHPass"
@@ -11,10 +11,10 @@
           
     
     - name: "Envoie de la backup vers la machine cible"
-      command: sshpass -p toto scp root@192.168.145.130:/home/abdelansible/library/backup.sql /root/
+      command: sshpass -p MDP scp USER@IP/HOST:/home/USER/library/backup.sql /USER/
 
     
     - name: "Restauration de la base de donnée"
       modulesave:
-        db_name: aistest
+        db_name: BDNAME
         request: restore
