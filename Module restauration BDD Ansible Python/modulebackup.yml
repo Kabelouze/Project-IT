@@ -1,12 +1,12 @@
 ---
 - name: "Requete dans une base"
-  hosts: testdb
-  remote_user: root
+  hosts: HOSTMACHINE
+  remote_user: USER
   
   tasks:
     - name: "Sauvegarde de la base de données"
       modulesave:
-        db_name: aistest
+        db_name: DBNAME
         request: backup
     
     - name: "Installation de SSHPass"
@@ -16,4 +16,4 @@
           
     
     - name: "Envoie de la back up vers la machine Ansible"
-      command: sshpass -p toto scp /root/backup.sql  root@192.168.145.130:/home/abdelansible/library
+      command: sshpass -p MDP scp /USER/backup.sql  USER@IP OU HOST:/home/USER/library
