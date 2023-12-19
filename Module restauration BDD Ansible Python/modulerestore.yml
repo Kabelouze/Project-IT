@@ -11,7 +11,7 @@
           
     
     - name: "Envoie de la backup vers la machine cible"
-      command: sshpass -p MDP scp USER@IP/HOST:/home/USER/library/backup.sql /USER/
+      command: sshpass -p MDP scp USER@IP OU HOST:/home/USER/library/backup.sql /USER/
 
     
     - name: "Restauration de la base de donnée"
