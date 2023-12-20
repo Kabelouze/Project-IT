@@ -1,0 +1,13 @@
+---
+- hosts: all
+  remote_user: ansiblecli
+  become: true
+  become_method: sudo
+  tasks:
+    - name: Téléchargement de lynis
+      shell: 
+        sudo wget https://downloads.cisofy.com/lynis/lynis-3.0.9.tar.gz
+    
+    - name: Extraction de lynis
+      shell:
+          sudo tar -zxf lynis-3.0.9.tar.gz
