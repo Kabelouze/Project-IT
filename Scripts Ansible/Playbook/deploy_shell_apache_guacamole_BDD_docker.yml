@@ -1,0 +1,101 @@
+---
+- hosts: SRVCIBLE
+  remote_user: ansiblecli
+  become: true
+  become_method: sudo
+  tasks:
+    - name: Téléchargement du script d'installation de docker
+      shell: 
+        wget -O dockerinstall.sh https://get.docker.com
+    
+    - name: Modification des droits sur le script
+      shell:
+        sudo chmod 777 ./dockerinstall.sh
+    
+    - name: Lancement du script d'installation docker
+      shell:
+        sudo bash ./dockerinstall.sh
+    
+    - name: Ajout de ansiblecli au groupe docker
+      shell:
+        sudo usermod -aG docker ansiblecli
+    
+    - name: Redémarrage du service docker
+      shell:
+        sudo systemctl restart docker
+
+    - name: Supression du script d'installation docker
+      shell:
+        rm -R ./dockerinstall.sh
+
+    - name: Pull de l'image docker guacamole/guacd
+      shell:
+        docker pull guacamole/guacd
+
+    - name: Pull de l'image docker guacamole/guacamole
+      shell:
+        docker pull guacamole/guacd
+
+    - name: Pull de l'image mysql/mysql avec lancement de configuration
+      shell:
+        docker run --name guacamoledb -e MYSQL_ROOT_PASSWORD=password -e MYSQL_DATABASE=guacdb -d mysql/mysql-server
+    
+    - name: Création du dossier de stockage de la BDD
+      shell:
+        mkdir -p /opt/guacamole/mysql
+
+    - name: Initialisation de la BDD à l'aide du scripy guacamole
+      shell:
+        docker run --rm guacamole/guacamole /opt/guacamole/bin/initdb.sh --mysql > /opt/guacamole/mysql/01-initdb.sql
+    
+    - name: Copie du script d'initialisation de la BDD dans le docker MYSQL
+      shell:
+        docker cp /opt/guacamole/mysql/01-initdb.sql guacamoledb:/docker-entrypoint-initdb.d
+
+    - name: Lancement du Bash dans le conteneur mysql
+      shell:
+        docker exec -it guacamoledb bash
+
+    - name: Déplacement dans le répertoire d'initialisation
+      shell:
+        cd /docker-entrypoint-initdb.d/
+
+    - name: Connexion à la base de donnée en root 
+      shell:
+        mysql -u root -p
+
+    - name: Utilisation de la BDD guacdb
+      shell:
+        use guacdb;
+    
+    - name: Utilisation de la source d'initialisation
+      shell:
+        source 01-initdb.sql;
+
+    - name: Création de l'utilisateur et du mot de passe de la BDD
+      shell:
+        create user guacadmin@'%' identified by 'password';
+
+    - name: Attribution des droits sur la BDD
+      shell:
+        grant SELECT,UPDATE,INSERT,DELETE on guacdb.* to guacadmin@'%';
+
+    - name: Flush des droits
+      shell:
+        flush privileges;
+    
+    - name: Quitte la BDD
+      shell:
+        exit;
+
+    - name: Quitte le docker mysql 
+      shell:
+        exit
+
+    - name: Lancement du serveur docker guacamole
+      shell:
+        docker run --name guacamole-server -d guacamole/guacd
+
+    - name: Lancement du client guacamole
+      shell:
+        docker run --name guacamole-client --link guacamole-server:guacd --link guacamoledb:mysql -e MYSQL_DATABASE=guacdb -e MYSQL_USER=guacadmin -e MYSQL_PASSWORD=password -d -p 80:8080 guacamole/guacamole
