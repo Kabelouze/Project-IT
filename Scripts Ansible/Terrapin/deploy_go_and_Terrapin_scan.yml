@@ -1,0 +1,26 @@
+---
+- hosts: HOSTMACHINE
+  remote_user: USERMACHINE
+  tasks:
+    - name: Téléchargement de go
+      shell: wget https://go.dev/dl/go1.21.5.linux-amd64.tar.gz
+
+    - name: Extraction de go
+      shell: rm -rf /usr/local/go && tar -C /usr/local -xzf go1.21.5.linux-amd64.tar.gz
+
+    - name: Vérification de la version de go
+      shell: /usr/local/go/bin/go version
+      register: go_version
+
+    - debug:
+        var: go_version.stdout
+    
+    - name: Installation du scanner Terrapin
+      shell: /usr/local/go/bin/go install github.com/RUB-NDS/Terrapin-Scanner@latest
+
+    - name: Scan de la machine à l'aide de l'outil Terrapin
+      shell: ./go/bin/Terrapin-Scanner --connect localhost
+      register: terrapin_scan
+    - debug:
+        var: terrapin_scan.stdout
+        
