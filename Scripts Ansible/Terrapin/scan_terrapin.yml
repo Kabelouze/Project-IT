@@ -1,0 +1,10 @@
+---
+- hosts: HOSTMACHINE
+  remote_user: USERMACHINE
+  tasks:
+    - name: Scan de la machine à l'aide de l'outil Terrapin
+      shell: ./go/bin/Terrapin-Scanner --connect localhost
+      register: terrapin_scan
+    - debug:
+        var: terrapin_scan.stdout
+        
