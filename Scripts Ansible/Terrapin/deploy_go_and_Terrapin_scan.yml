@@ -1,6 +1,8 @@
 ---
-- hosts: HOSTMACHINE
+- hosts: MACHINE
   remote_user: USERMACHINE
+  become: true
+  become_method: sudo
   tasks:
     - name: Téléchargement de go
       shell: wget https://go.dev/dl/go1.21.5.linux-amd64.tar.gz
@@ -17,6 +19,9 @@
     
     - name: Installation du scanner Terrapin
       shell: /usr/local/go/bin/go install github.com/RUB-NDS/Terrapin-Scanner@latest
+
+    - name: Deplacement du répertoir Terrapin vers le /home/user
+      shell: mv /root/go /home/USER
 
     - name: Scan de la machine à l'aide de l'outil Terrapin
       shell: ./go/bin/Terrapin-Scanner --connect localhost
