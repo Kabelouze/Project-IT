@@ -1,0 +1,12 @@
+---
+- hosts: all
+  remote_user: ansiblecli
+  become: true
+  become_method: sudo
+  tasks:
+    - name: Lecture et affichage du rapport
+      shell: cat /var/log/logsscripts.txt
+      register: logresult
+    
+    - debug:
+        var: logresult.stdout
