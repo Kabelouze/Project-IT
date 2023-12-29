@@ -86,7 +86,7 @@
 
     - name: Lancement du client guacamole
       shell:
-        sudo docker run --name guacamole-client --link guacamole-server:guacd --link guacamoledb:mysql -e MYSQL_DATABASE=guacdb -e MYSQL_USER=guacadmin -e MYSQL_PASSWORD=Password -d -p 80:8080 guacamole/guacamole
+        sudo docker run --name guacamole-client --link guacamole-server:guacd --link guacamoledb:mysql -e MYSQL_DATABASE=guacdb -e MYSQL_USER=guacadmin -e MYSQL_PASSWORD=Password -e TOTP_ENABLED="true" -d -p 80:8080 guacamole/guacamole
 
     - name: Suppression du script mysql.sh dans le conteneur
       community.docker.docker_container_exec:
