@@ -55,6 +55,17 @@
       shell:
         sudo docker cp /opt/guacamole/mysql/01-initdb.sql guacamoledb:/docker-entrypoint-initdb.d
 
+    - name: Création de script
+      copy:
+        dest: "/home/ansiblecli/mysql"
+        content:  |
+          mysql -u root --password=password -e "CREATE USER guacadmin@'%' identified by 'password';"
+          mysql -u root --password=password -e "GRANT SELECT,UPDATE,INSERT,DELETE on guacdb.* to guacadmin@'%';"
+          mysql -u root --password=password -e "FLUSH PRIVILEGES;"
+    
+    - name: Script renommer avec l'extension
+      shell: mv /home/ansiblecli/mysql /home/ansiblecli/mysql.sh 
+
     - name: Copie du script mysql.sh vers le docker
       shell:
         sudo docker cp /home/ansiblecli/mysql.sh guacamoledb:/docker-entrypoint-initdb.d
