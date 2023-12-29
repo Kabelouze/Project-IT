@@ -1,16 +1,16 @@
 ---
-- hosts: SRVGUACAMOLE
-  remote_user: ansiblecli
+- hosts: HOSTMACHINE
+  remote_user: USERHOST
   become: true
   become_method: sudo
   tasks:
     - name: Création de script
       copy:
-        dest: "/home/ansiblecli/mysql"
+        dest: "/home/USER/mysql"
         content:  |
           mysql -u root --password=password -e "CREATE USER guacadmin@'%' identified by 'password';"
           mysql -u root --password=password -e "GRANT SELECT,UPDATE,INSERT,DELETE on guacdb.* to guacadmin@'%';"
           mysql -u root --password=password -e "FLUSH PRIVILEGES;"
     
     - name: script renommer avec l'extension
-      shell: mv /home/ansiblecli/mysql /home/ansiblecli/mysql.sh 
+      shell: mv /home/USER/mysql /home/USER/mysql.sh 
