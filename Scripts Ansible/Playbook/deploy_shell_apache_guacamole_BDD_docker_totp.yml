@@ -1,0 +1,97 @@
+---
+- hosts: HOSTMACHINE
+  remote_user: USERHOST
+  become: true
+  become_method: sudo
+  tasks:
+    - name: Téléchargement du script d'installation de docker
+      shell: 
+        sudo wget -O dockerinstall.sh https://get.docker.com
+    
+    - name: Modification des droits sur le script
+      shell:
+        sudo chmod 777 ./dockerinstall.sh
+    
+    - name: Lancement du script d'installation docker
+      shell:
+        sudo bash ./dockerinstall.sh
+    
+    - name: Ajout de l'utilisateur au groupe docker
+      shell:
+        sudo usermod -aG docker USERHOST
+
+    - name: Ajout de l'utilisateur root au groupe docker
+      shell: sudo usermod -aG docker root
+    
+    - name: Redémarrage du service docker
+      shell:
+        sudo systemctl restart docker
+
+    - name: Supression du script d'installation docker
+      shell:
+        sudo rm -R ./dockerinstall.sh
+
+    - name: Pull de l'image docker guacamole/guacd
+      shell:
+        sudo docker pull guacamole/guacd
+
+    - name: Pull de l'image docker guacamole/guacamole
+      shell:
+        sudo docker pull guacamole/guacd
+
+    - name: Pull de l'image mysql/mysql avec lancement de configuration
+      shell:
+        sudo docker run --name guacamoledb -e MYSQL_ROOT_PASSWORD=Password -e MYSQL_DATABASE=guacdb -d mysql/mysql-server
+    
+    - name: Création du dossier de stockage de la BDD
+      shell:
+        mkdir -p /opt/guacamole/mysql
+
+    - name: Génération du script d'initialisation
+      shell:
+        sudo docker run --rm guacamole/guacamole /opt/guacamole/bin/initdb.sh --mysql > /opt/guacamole/mysql/01-initdb.sql
+    
+    - name: Copie du script d'initialisation de la BDD dans le docker MYSQL
+      shell:
+        sudo docker cp /opt/guacamole/mysql/01-initdb.sql guacamoledb:/docker-entrypoint-initdb.d
+
+    - name: Création de script
+      copy:
+        dest: "/home/ansiblecli/mysql"
+        content:  |
+          mysql -u root --password=password -e "CREATE USER guacadmin@'%' identified by 'password';"
+          mysql -u root --password=password -e "GRANT SELECT,UPDATE,INSERT,DELETE on guacdb.* to guacadmin@'%';"
+          mysql -u root --password=password -e "FLUSH PRIVILEGES;"
+    
+    - name: Script renommer avec l'extension
+      shell: mv /home/ansiblecli/mysql /home/ansiblecli/mysql.sh 
+
+    - name: Copie du script mysql.sh vers le docker
+      shell:
+        sudo docker cp /home/USERHOST/mysql.sh guacamoledb:/docker-entrypoint-initdb.d
+
+    - name: Commande Bash dans le conteneur guacamoledb (lancement du script d'initialisation de la BDD)
+      community.docker.docker_container_exec:
+        container: guacamoledb
+        command: /bin/bash -c "mysql -u root --password=Password -D guacdb < /docker-entrypoint-initdb.d/01-initdb.sql"
+
+    - name: Commande Bash lancement du script mysql.sh
+      community.docker.docker_container_exec:
+        container: guacamoledb
+        command: /bin/bash -c "bash /docker-entrypoint-initdb.d/mysql.sh"
+
+    - name: Lancement du serveur docker guacamole
+      shell:
+        sudo docker run --name guacamole-server -d guacamole/guacd
+
+    - name: Lancement du client guacamole
+      shell:
+        sudo docker run --name guacamole-client --link guacamole-server:guacd --link guacamoledb:mysql -e MYSQL_DATABASE=guacdb -e MYSQL_USER=guacadmin -e MYSQL_PASSWORD=Password -e TOTP_ENABLED="true" -d -p 80:8080 guacamole/guacamole
+
+    - name: Suppression du script mysql.sh dans le conteneur
+      community.docker.docker_container_exec:
+        container: guacamoledb
+        command: /bin/bash -c "rm /docker-entrypoint-initdb.d/mysql.sh"
+
+    - name: Supression du script mysql.sh dans la machine hôte
+      shell: sudo rm /home/USERHOST/mysql.sh 
