@@ -68,7 +68,7 @@
 
     - name: Copie du script mysql.sh vers le docker
       shell:
-        sudo docker cp /home/ansiblecli/mysql.sh guacamoledb:/docker-entrypoint-initdb.d
+        sudo docker cp /home/USERHOST/mysql.sh guacamoledb:/docker-entrypoint-initdb.d
 
     - name: Commande Bash dans le conteneur guacamoledb (lancement du script d'initialisation de la BDD)
       community.docker.docker_container_exec:
