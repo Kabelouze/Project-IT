@@ -64,7 +64,7 @@
           mysql -u root --password=password -e "FLUSH PRIVILEGES;"
     
     - name: Script renommer avec l'extension
-      shell: mv /home/ansiblecli/mysql /home/ansiblecli/mysql.sh 
+      shell: mv /home/USER/mysql /home/USER/mysql.sh 
 
     - name: Copie du script mysql.sh vers le docker
       shell:
