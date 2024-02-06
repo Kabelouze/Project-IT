@@ -5,7 +5,7 @@
   become_method: sudo
   tasks:
     - name: Lecture et affichage du rapport
-      shell: cat /var/log/logsscripts.txt
+      shell: cat /var/log/updatesscripts.log
       register: logresult
     
     - debug:
